@@ -3,7 +3,6 @@
 #[macro_use]
 extern crate error_chain;
 extern crate rand;
-extern crate rgsl;
 extern crate rayon;
 #[cfg(test)]
 #[macro_use]
@@ -13,6 +12,7 @@ extern crate assert_approx_eq;
 pub mod io;
 pub mod histogram;
 pub mod error_analysis;
+pub mod statistics;
 
 use histogram::Dataset;
 use std::f64;

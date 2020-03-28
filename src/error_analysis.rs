@@ -2,7 +2,7 @@ use rand::{SeedableRng, StdRng, Rng};
 use super::histogram::{Dataset};
 use super::perform_wham;
 use super::Config;
-use rgsl::statistics;
+use super::statistics::std;
 
 // returns a set of num_windows continious weights by
 // a) generate num_windows-1 random variables and sort them
@@ -47,7 +47,7 @@ pub fn run_bootstrap(cfg: &Config, ds: Dataset, P: &[f64], num_runs: usize) -> (
     let mut P_std = vec![0.0; ds.num_bins];
     for bin in 0..ds.num_bins {
         let Ps = bootstrapped_Ps.iter().map(|window| window[bin]).collect::<Vec<f64>>();
-        P_std[bin] = statistics::sd(&Ps, 1, num_runs);
+        P_std[bin] = std(&Ps);
     }
 
     // A_std by error propagation
@@ -55,7 +55,7 @@ pub fn run_bootstrap(cfg: &Config, ds: Dataset, P: &[f64], num_runs: usize) -> (
     (P_std, A_std)
 }
 
-#[cfg(tests)]
+#[cfg(test)]
 mod tests {
     use super::*;
     use super::super::k_B;
@@ -89,7 +89,8 @@ mod tests {
     #[test]
     fn random_weights() {
         let num_windows = 5;
-        let weights = generate_random_weights(num_windows);
+        let mut rng: StdRng = SeedableRng::seed_from_u64(123);
+        let weights = generate_random_weights(num_windows, &mut rng);
         assert_eq!(num_windows, weights.len());
         for w in weights {
             assert!(0.0 < w && w < 1.0);
@@ -99,7 +100,8 @@ mod tests {
     #[test]
     fn random_weighted_dataset() {
         let ds = build_hist_set();
-        let rnd_weights_ds = generate_random_weighted_dataset(ds);
+        let mut rng: StdRng = SeedableRng::seed_from_u64(123);
+        let rnd_weights_ds = generate_random_weighted_dataset(ds, &mut rng);
         println!("{:?}", rnd_weights_ds.weights);
         for w in rnd_weights_ds.weights {
             assert!(w > 0.0);
